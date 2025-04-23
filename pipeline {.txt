@@ -1,62 +1,173 @@
 pipeline {
     agent any
- 
-    tools{
-        maven 'maven'
+
+    environment {
+        DOCKERHUB_CREDENTIALS = 'dockerhub-creds' // Your Jenkins credential ID
+        DOCKER_IMAGE = 'kundarakesh421/custom-image'
+        DOCKER_TAG = 'latest'
     }
-    stages{
-        stage('clone repo'){
-            steps{
-                git branch: 'main', url: 'https://github.com/kulashekaralwar/RCB_webapplication.git'
+
+    stages {
+        stage('Checkout Source') {
+            steps {
+                git url: 'https://github.com/rockrakesh123/Todo-app-pl.git', branch: 'main'
             }
         }
-        stage('create build'){
-            steps{
-                sh 'mvn clean package'
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $DOCKER_IMAGE:$DOCKER_TAG .'
             }
         }
-        stage('Create image'){
-            steps{
-                sh 'sudo docker build -t app .'
+
+        stage('Login to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "${env.DOCKERHUB_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                }
             }
         }
-        stage('Assign tag'){
-            steps{
-                sh 'docker tag app kundarakesh421/v1'
-            }
-        }
-        stage('Push to dockerhub'){
-            steps{
-                sh 'echo passwd | docker login -u username --password-stdin'
-                sh 'docker push kundarakesh421/v1'
-            }
-        }
-        stage('Remove images'){
-            steps{
-                sh 'docker image prune -a'
-            }
-        }
-        stage('Pull image from DockerHub'){
-            steps{
-                sh 'docker pull kundarakesh421/v1'
-            }
-        }
-        stage('Run a container'){
-            steps{
-                sh 'docker run -it -d --name rkunda -p 8081:8080 dockerhub/repo'
+
+        stage('Push Docker Image') {
+            steps {
+                sh 'docker push $DOCKER_IMAGE:$DOCKER_TAG'
             }
         }
     }
+
     post {
         success {
-            echo 'Deployment successful'
+            echo "Image $DOCKER_IMAGE:$DOCKER_TAG pushed to Docker Hub successfully."
         }
         failure {
-            sh 'docker rm -f rakesh'
+            echo 'Docker image build or push failed.'
         }
-        always{
-            sh 'Deployed'
-        }
-    }  
+    }
 }
- 
+
+
+
+
+
+pipeline {
+    agent any
+
+    environment {
+        PRIVATE_REPO = 'https://github.com/saisrinivas06/test-repo.git'
+    }
+
+    stages {
+        stage('Clone Private Repo') {
+            steps {
+                dir('private-repo') {
+                    git url: "${env.PRIVATE_REPO}", branch: 'main', credentialsId: 'git-creds'
+                    echo "Private repo cloned successfully."
+                }
+            }
+        }
+
+        stage('List Files') {
+            steps {
+                sh 'ls -l private-repo'
+            }
+        }
+
+        stage('Run Build/Tests') {
+            steps {
+                dir('private-repo') {
+                    sh '''
+                    echo "Running build or tests..."
+                    # Replace this with actual commands like:
+                    # npm install
+                    # npm test
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline finished running.'
+        }
+        success {
+            echo 'Pipeline succeeded.'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
+}
+
+
+
+java-maven-sonar-argocd-helm-k8s/spring-boot-app/JenkinsFile
+
+pipeline {
+  agent {
+    docker {
+      image 'rockrakesh123/maven-abhishek-docker-agent:v1'
+      args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
+    }
+  }
+  stages {
+    stage('Checkout') {
+      steps {
+        sh 'echo passed'
+        //git branch: 'main', url: 'https://github.com/iam-veeramalla/Jenkins-Zero-To-Hero.git'
+      }
+    }
+    stage('Build and Test') {
+      steps {
+        sh 'ls -ltr'
+        // build the project and create a JAR file
+        sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
+      }
+    }
+    stage('Static Code Analysis') {
+      environment {
+        SONAR_URL = "http://34.201.116.83:9000"
+      }
+      steps {
+        withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+          sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
+        }
+      }
+    }
+    stage('Build and Push Docker Image') {
+      environment {
+        DOCKER_IMAGE = "abhishekf5/ultimate-cicd:${BUILD_NUMBER}"
+        // DOCKERFILE_LOCATION = "java-maven-sonar-argocd-helm-k8s/spring-boot-app/Dockerfile"
+        REGISTRY_CREDENTIALS = credentials('docker-cred')
+      }
+      steps {
+        script {
+            sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
+            def dockerImage = docker.image("${DOCKER_IMAGE}")
+            docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
+                dockerImage.push()
+            }
+        }
+      }
+    }
+    stage('Update Deployment File') {
+        environment {
+            GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
+            GIT_USER_NAME = "iam-veeramalla"
+        }
+        steps {
+            withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+                sh '''
+                    git config user.email "abhishek.xyz@gmail.com"
+                    git config user.name "Abhishek Veeramalla"
+                    BUILD_NUMBER=${BUILD_NUMBER}
+                    sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+                    git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+                    git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                    git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                '''
+            }
+        }
+    }
+  }
+}
