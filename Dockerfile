@@ -1,18 +1,18 @@
-# Base image
-FROM node:18-alpine
+# Use official Python image
+FROM python:3.9-slim
 
-# Set working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm install
-
-# Copy rest of the application
+# Copy files
 COPY . .
 
-# Expose port (change it based on your app)
-EXPOSE 3000
+# Install dependencies
+RUN pip install -r requirements.txt
 
-# Command to run your app
-CMD ["npm", "start"]
+# Expose port
+EXPOSE 5000
+
+# Run the app
+CMD ["python", "app.py"]
+
