@@ -1,0 +1,62 @@
+pipeline {
+    agent any
+ 
+    tools{
+        maven 'maven'
+    }
+    stages{
+        stage('clone repo'){
+            steps{
+                git branch: 'main', url: 'https://github.com/kulashekaralwar/RCB_webapplication.git'
+            }
+        }
+        stage('create build'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+        stage('Create image'){
+            steps{
+                sh 'sudo docker build -t app .'
+            }
+        }
+        stage('Assign tag'){
+            steps{
+                sh 'docker tag app kundarakesh421/v1'
+            }
+        }
+        stage('Push to dockerhub'){
+            steps{
+                sh 'echo passwd | docker login -u username --password-stdin'
+                sh 'docker push kundarakesh421/v1'
+            }
+        }
+        stage('Remove images'){
+            steps{
+                sh 'docker image prune -a'
+            }
+        }
+        stage('Pull image from DockerHub'){
+            steps{
+                sh 'docker pull kundarakesh421/v1'
+            }
+        }
+        stage('Run a container'){
+            steps{
+                sh 'docker run -it -d --name rkunda -p 8081:8080 dockerhub/repo'
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Deployment successful'
+        }
+        failure {
+            sh 'docker rm -f rakesh'
+        }
+        always{
+            sh 'Deployed'
+        }
+    }  
+}
+ 
