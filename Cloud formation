@@ -236,3 +236,76 @@ Assignment 1: A simple S3 bucket setup with versioning and lifecycle management.
 
 Assignment 2: A production-ready, highly available web application using EC2, Auto Scaling, and a Load Balanc
 
+
+
+Sure! Let's break down the AWS CloudFormation CLI command and explain each part. After that, I’ll provide the individual steps in one line, as requested.
+
+Command Breakdown:
+
+aws cloudformation create-stack --stack-name my-stack \
+  --template-body file://template.yaml \
+  --parameters file://parameters.json
+
+
+
+1. Step 1: Create the parameters file (parameters.json):
+
+
+[
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-12345678"
+  },
+  {
+    "ParameterKey": "SubnetId",
+    "ParameterValue": "subnet-87654321"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t2.micro"
+  }
+]
+
+
+
+echo '[{"ParameterKey": "VpcId", "ParameterValue": "vpc-12345678"}, {"ParameterKey": "SubnetId", "ParameterValue": "subnet-87654321"}, {"ParameterKey": "InstanceType", "ParameterValue": "t2.micro"}]' > parameters.json
+
+2. Step 2: Create the CloudFormation stack with the template and parameters:
+
+
+
+aws cloudformation create-stack --stack-name my-stack --template-body file://template.yaml --parameters file://parameters.json
+
+
+---
+
+Explanation of Steps:
+
+Step 1: The echo command creates a JSON file (parameters.json) with the parameters you'll pass to the CloudFormation stack.
+
+Each parameter in the JSON file is structured as ParameterKey and ParameterValue.
+
+
+Step 2: This is the actual command to create the CloudFormation stack.
+
+--stack-name my-stack: Defines the stack name.
+
+--template-body file://template.yaml: Points to the local template file.
+
+--parameters file://parameters.json: Passes the parameters defined in the parameters.json file to the CloudFormation stack.
+
+
+
+
+---
+
+Important Notes:
+
+Make sure the template.yaml file and parameters.json file are present in the directory where you're running the command.
+
+If you're working with a large template, ensure it is properly formatted and valid according to AWS CloudFormation standards.
+
+
+Let me know if you'd like help with creating the template file or have any questions!
+
+
