@@ -1,0 +1,44 @@
+.env files
+
+LOCATION=eastus2
+ACR_NAME=hu-devops-25-link-acr
+REPOSITORY_NAME=hu-devops-25-link-repository
+IMAGE_TAG=latest
+CONTAINER_APP_ENVIRONMENT=production
+CONTAINER_APP_NAME=hu-devops-25-link-container-app
+CPU_CORES=0.25
+MEMORY_GB=0.5
+SUBSCRIPTION_ID=5bdd4011-3266-4533-8a15-229a8fe9abd3
+RESOURCE_GROUP_NAME=AZRG-USE2-CON-DEVOPSHU2542-SBX-001
+
+
+
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Get the values of environment variables
+location = os.getenv("LOCATION")
+acr_name = os.getenv("ACR_NAME")
+repository_name = os.getenv("REPOSITORY_NAME")
+image_tag = os.getenv("IMAGE_TAG")
+container_app_environment = os.getenv("CONTAINER_APP_ENVIRONMENT")
+container_app_name = os.getenv("CONTAINER_APP_NAME")
+cpu_cores = float(os.getenv("CPU_CORES"))
+memory_gb = float(os.getenv("MEMORY_GB"))
+subscription_id = os.getenv("SUBSCRIPTION_ID")
+resource_group_name = os.getenv("RESOURCE_GROUP_NAME")
+
+# Print the values to verify
+print(f"LOCATION: {location}")
+print(f"ACR_NAME: {acr_name}")
+print(f"REPOSITORY_NAME: {repository_name}")
+print(f"IMAGE_TAG: {image_tag}")
+print(f"CONTAINER_APP_ENVIRONMENT: {container_app_environment}")
+print(f"CONTAINER_APP_NAME: {container_app_name}")
+print(f"CPU_CORES: {cpu_cores}")
+print(f"MEMORY_GB: {memory_gb}")
+print(f"SUBSCRIPTION_ID: {subscription_id}")
+print(f"RESOURCE_GROUP_NAME: {resource_group_name}")
