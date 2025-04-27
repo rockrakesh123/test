@@ -31,14 +31,463 @@ memory_gb = float(os.getenv("MEMORY_GB"))
 subscription_id = os.getenv("SUBSCRIPTION_ID")
 resource_group_name = os.getenv("RESOURCE_GROUP_NAME")
 
-# Print the values to verify
-print(f"LOCATION: {location}")
-print(f"ACR_NAME: {acr_name}")
-print(f"REPOSITORY_NAME: {repository_name}")
-print(f"IMAGE_TAG: {image_tag}")
-print(f"CONTAINER_APP_ENVIRONMENT: {container_app_environment}")
-print(f"CONTAINER_APP_NAME: {container_app_name}")
-print(f"CPU_CORES: {cpu_cores}")
-print(f"MEMORY_GB: {memory_gb}")
-print(f"SUBSCRIPTION_ID: {subscription_id}")
-print(f"RESOURCE_GROUP_NAME: {resource_group_name}")
+Excellent, you're thinking like a professional cloud engineer now —
+Real best practice is to NOT hardcode values inside Bicep/ARM but pass via parameters.
+
+I'll immediately create parameters.json files for both Assignment 1 and Assignment 2!
+
+
+---
+
+Assignment 1: Storage Account Deployment with parameters.json
+
+
+---
+
+Updated ARM Template (storageaccount-arm.json)
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('storageAccountName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {}
+    }
+  ]
+}
+
+
+---
+
+Parameters file (storageaccount-parameters.json)
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountName": {
+      "value": "hu-devops-25-link-storage"
+    },
+    "location": {
+      "value": "eastus2"
+    }
+  }
+}
+
+
+---
+
+Deploy Command
+
+az deployment group create \
+  --resource-group AZRG-USE2-CON-DEVOPSHU2542-SBX-001 \
+  --template-file storageaccount-arm.json \
+  --parameters storageaccount-parameters.json
+
+
+---
+
+Assignment 2: Container App Deployment with parameters.json
+
+
+---
+
+Updated ARM Template (containerapp-arm.json)
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "containerAppName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "managedEnvironmentName": {
+      "type": "string"
+    },
+    "imageName": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2022-03-01",
+      "name": "[parameters('containerAppName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('managedEnvironmentName'))]",
+        "configuration": {
+          "ingress": {
+            "external": true,
+            "targetPort": 80
+          }
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "appcontainer",
+              "image": "[parameters('imageName')]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
+
+
+---
+
+Parameters file (containerapp-parameters.json)
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "containerAppName": {
+      "value": "hu-devops-25-link-container-app"
+    },
+    "location": {
+      "value": "eastus2"
+    },
+    "managedEnvironmentName": {
+      "value": "hu-devops-25-link-env"
+    },
+    "imageName": {
+      "value": "docker.io/nginx:latest"
+    }
+  }
+}
+
+
+---
+
+Deploy Command
+
+az deployment group create \
+  --resource-group AZRG-USE2-CON-DEVOPSHU2542-SBX-001 \
+  --template-file containerapp-arm.json \
+  --parameters containerapp-parameters.json
+
+
+---
+
+Excellent, you're thinking like a professional cloud engineer now —
+Real best practice is to NOT hardcode values inside Bicep/ARM but pass via parameters.
+
+I'll immediately create parameters.json files for both Assignment 1 and Assignment 2!
+
+
+---
+
+Assignment 1: Storage Account Deployment with parameters.json
+
+
+---
+
+Updated ARM Template (storageaccount-arm.json)
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('storageAccountName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {}
+    }
+  ]
+}
+
+
+---
+
+Parameters file (storageaccount-parameters.json)
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountName": {
+      "value": "hu-devops-25-link-storage"
+    },
+    "location": {
+      "value": "eastus2"
+    }
+  }
+}
+
+
+---
+
+Deploy Command
+
+az deployment group create \
+  --resource-group AZRG-USE2-CON-DEVOPSHU2542-SBX-001 \
+  --template-file storageaccount-arm.json \
+  --parameters storageaccount-parameters.json
+
+
+---
+
+Assignment 2: Container App Deployment with parameters.json
+
+
+---
+
+Updated ARM Template (containerapp-arm.json)
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "containerAppName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "managedEnvironmentName": {
+      "type": "string"
+    },
+    "imageName": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2022-03-01",
+      "name": "[parameters('containerAppName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('managedEnvironmentName'))]",
+        "configuration": {
+          "ingress": {
+            "external": true,
+            "targetPort": 80
+          }
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "appcontainer",
+              "image": "[parameters('imageName')]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
+
+
+---
+
+Parameters file (containerapp-parameters.json)
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "containerAppName": {
+      "value": "hu-devops-25-link-container-app"
+    },
+    "location": {
+      "value": "eastus2"
+    },
+    "managedEnvironmentName": {
+      "value": "hu-devops-25-link-env"
+    },
+    "imageName": {
+      "value": "docker.io/nginx:latest"
+    }
+  }
+}
+
+
+---
+
+Deploy Command
+
+az deployment group create \
+  --resource-group AZRG-USE2-CON-DEVOPSHU2542-SBX-001 \
+  --template-file containerapp-arm.json \
+  --parameters containerapp-parameters.json
+
+
+--------------++++++++)
+Awesome!
+Let’s quickly complete everything to make you super ready for tomorrow.
+
+
+---
+
+BICEP Templates with Parameters
+
+Assignment 1: Storage Account (storageaccount.bicep)
+
+param storageAccountName string
+param location string = resourceGroup().location
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+}
+
+
+---
+
+Assignment 2: Container App (containerapp.bicep)
+
+param containerAppName string
+param location string = resourceGroup().location
+param managedEnvironmentName string
+param imageName string
+
+resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
+  name: containerAppName
+  location: location
+  properties: {
+    managedEnvironmentId: resourceId('Microsoft.App/managedEnvironments', managedEnvironmentName)
+    configuration: {
+      ingress: {
+        external: true
+        targetPort: 80
+      }
+    }
+    template: {
+      containers: [
+        {
+          name: 'appcontainer'
+          image: imageName
+        }
+      ]
+    }
+  }
+}
+
+
+---
+
+How to Deploy Bicep with Parameters
+
+At deploy time pass parameters like:
+
+az deployment group create \
+  --resource-group AZRG-USE2-CON-DEVOPSHU2542-SBX-001 \
+  --template-file storageaccount.bicep \
+  --parameters storageAccountName=hu-devops-25-link-storage location=eastus2
+
+az deployment group create \
+  --resource-group AZRG-USE2-CON-DEVOPSHU2542-SBX-001 \
+  --template-file containerapp.bicep \
+  --parameters containerAppName=hu-devops-25-link-container-app managedEnvironmentName=hu-devops-25-link-env imageName=docker.io/nginx:latest location=eastus2
+
+OR+++++++++++_--------_------------+++++++++++--------------------
+You can also maintain .bicepparam files — but for now passing inline is very professional.
+
+. Passing Variables in Bicep
+
+Variables in Bicep are passed using parameters. You can define these parameters in your Bicep template and provide their values during deployment. Here’s an example:
+
+Bicep Template (example.bicep)
+
+param storageAccountName string
+param location string = resourceGroup().location
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+}
+
+Parameters File (example.parameters.json)
+
+To provide values for the parameters during deployment, create a parameters file (e.g., example.parameters.json):
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountName": {
+      "value": "hu-devops-25-link-storage"
+    },
+    "location": {
+      "value": "eastus2"
+    }
+  }
+}
+
+2. Passing Variables During Deployment
+
+You can pass the values of the parameters during the deployment by referencing a parameters file using the following az CLI command:
+
+az deployment group create \
+  --resource-group <your-resource-group> \
+  --template-file ./example.bicep \
+  --parameters @example.parameters.json
+
+3. Environment Variables as Parameters (Indirect Method)
+
+While Bicep doesn’t directly support .env files, you can read environment variables in your shell and pass them into Bicep using the az deployment command.
+
+Example: Passing Environment Variables
+
+Let’s assume you have an .env file with variables:
+
+LOCATION=eastus2
+STORAGE_ACCOUNT_NAME=hu-devops-25-link-storage
+
+You can use a shell script to load these environment variables and pass them to Bicep during deployment:
+
+# Load the environment variables
+export $(cat .env | xargs)
+
+# Deploy the Bicep template with the environment variables
+az deployment group create \
+  --resource-group AZRG-USE2-CON-DEVOPSHU2542-SBX-001 \
+  --template-file ./example.bicep \
+  --parameters storageAccountName=$STORAGE_ACCOUNT_NAME location=$LOCATION
+---
+
