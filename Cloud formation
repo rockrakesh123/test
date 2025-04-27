@@ -1,0 +1,238 @@
+Great! Let’s dive into Assignment 1 and Assignment 2 with ready-to-use CloudFormation templates.
+
+
+---
+
+Assignment 1: Create an S3 Bucket with Versioning and Lifecycle Policy
+
+Goal:
+
+Create an S3 bucket.
+
+Enable versioning.
+
+Attach a lifecycle policy to move objects to S3 Glacier after 90 days.
+
+Block all public access.
+
+Output the bucket name.
+
+
+
+---
+
+CloudFormation Template for Assignment 1:
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Create an S3 bucket with versioning and lifecycle policy
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: my-production-bucket-123456
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: MoveToGlacier
+            Status: Enabled
+            Prefix: ""
+            Transitions:
+              - TransitionInDays: 90
+                StorageClass: GLACIER
+            ExpirationInDays: 365
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+
+Outputs:
+  BucketName:
+    Description: The name of the S3 bucket
+    Value: !Ref S3Bucket
+
+Explanation:
+
+S3 Bucket: Defines the bucket with versioning enabled.
+
+Lifecycle Policy: Moves objects to GLACIER after 90 days.
+
+Public Access Block: Blocks all public access to ensure the bucket is private.
+
+Outputs: Outputs the bucket name for reference.
+
+
+
+---
+
+How to Deploy:
+
+1. Save the template as s3_bucket_template.yaml.
+
+
+2. Deploy using AWS CLI:
+
+aws cloudformation create-stack --stack-name s3-bucket-stack --template-body file://s3_bucket_template.yaml
+
+
+3. After deployment, you can check the bucket name in the CloudFormation outputs.
+
+
+
+
+---
+
+Assignment 2: Deploy a Highly Available Web App with Auto Scaling and Load Balancer
+
+Goal:
+
+Create:
+
+Auto Scaling Group (ASG) with a minimum of 2 and maximum of 4 EC2 instances.
+
+Application Load Balancer (ALB) in front of the instances.
+
+Security Groups for ALB and EC2.
+
+
+Launch template with UserData to install Apache on EC2.
+
+
+
+---
+
+CloudFormation Template for Assignment 2:
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Create a highly available web app with Auto Scaling and Load Balancer
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC Id to launch resources
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet Id to launch the EC2 instances
+
+Resources:
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP access to web app
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  WebServerInstance:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: WebAppLaunchTemplate
+      VersionDescription: "1"
+      LaunchTemplateData:
+        InstanceType: t2.micro
+        KeyName: your-key-name
+        ImageId: ami-0fc5d935ebf8bc3bc  # Replace with a valid AMI ID (Amazon Linux/Ubuntu)
+        SecurityGroupIds:
+          - !Ref WebSecurityGroup
+        UserData:
+          Fn::Base64: |
+            #!/bin/bash
+            sudo yum update -y
+            sudo yum install -y httpd
+            sudo systemctl start httpd
+            sudo systemctl enable httpd
+
+  WebAppLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: web-app-alb
+      Subnets:
+        - !Ref SubnetId
+      SecurityGroups:
+        - !Ref WebSecurityGroup
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: "60"
+  
+  WebAppTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: web-app-tg
+      Port: 80
+      Protocol: HTTP
+      VpcId: !Ref VpcId
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: "/"
+      HealthCheckPort: "80"
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: "200"
+
+  WebAppASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      DesiredCapacity: 2
+      MaxSize: 4
+      MinSize: 2
+      VPCZoneIdentifier:
+        - !Ref SubnetId
+      LaunchTemplate:
+        LaunchTemplateName: !Ref WebServerInstance
+        Version: "1"
+      TargetGroupARNs:
+        - !Ref WebAppTargetGroup
+      HealthCheckType: EC2
+      HealthCheckGracePeriod: 300
+      Tags:
+        - Key: Name
+          Value: WebAppInstance
+          PropagateAtLaunch: true
+
+Outputs:
+  LoadBalancerURL:
+    Description: The URL of the load balancer
+    Value: !GetAtt WebAppLoadBalancer.DNSName
+
+Explanation:
+
+Launch Template: Defines the EC2 instance type (t2.micro), AMI ID, and user data to install Apache.
+
+Auto Scaling Group (ASG): Manages the scaling of EC2 instances between 2 and 4 instances based on load.
+
+Load Balancer: The ALB routes traffic to the EC2 instances.
+
+Security Groups: Defines which traffic is allowed (port 80 in this case).
+
+
+
+---
+
+How to Deploy:
+
+1. Save the template as webapp_scaling_template.yaml.
+
+
+2. Deploy using AWS CLI:
+
+aws cloudformation create-stack --stack-name webapp-scaling-stack --template-body file://webapp_scaling_template.yaml --parameters ParameterKey=VpcId,ParameterValue=vpc-xxxxxxx ParameterKey=SubnetId,ParameterValue=subnet-xxxxxxx
+
+
+3. After deployment, you can access the load balancer's URL to check your web application.
+
+
+
+
+---
+
+Conclusion:
+
+Assignment 1: A simple S3 bucket setup with versioning and lifecycle management.
+
+Assignment 2: A production-ready, highly available web application using EC2, Auto Scaling, and a Load Balanc
+
