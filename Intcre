@@ -110,7 +110,8 @@ aws cloudformation create-stack \
 
 Important Points
 
-
+aws ec2 create-key-pair --key-name my-keypair --query 'KeyMaterial' --output text > my-keypair.pem
+chmod 400 my-keypair.pem
 ---
 
 Summary
