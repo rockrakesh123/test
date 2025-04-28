@@ -1,0 +1,135 @@
+Perfect, let's go step-by-step based on what you asked:
+
+
+---
+
+Task:
+
+Deploy an EC2 instance using AWS CloudFormation
+Conditions:
+
+Do not hardcode values inside the main template
+
+Use a separate parameters.json file to pass dynamic values
+
+
+
+---
+
+Folder structure
+
+/ec2-deployment
+  |-- template.yaml
+  |-- parameters.json
+
+
+---
+
+1. CloudFormation Template: template.yaml
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation Template to deploy an EC2 Instance
+
+Parameters:
+  InstanceType:
+    Type: String
+    Description: EC2 instance type
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Name of an existing EC2 KeyPair to SSH into the instance
+  AmiId:
+    Type: AWS::EC2::Image::Id
+    Description: AMI ID for the EC2 instance
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet ID where the instance will be launched
+  SecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Security Group ID attached to EC2 instance
+
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      ImageId: !Ref AmiId
+      SubnetId: !Ref SubnetId
+      SecurityGroupIds:
+        - !Ref SecurityGroupId
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-EC2Instance"
+
+Outputs:
+  InstanceId:
+    Description: EC2 Instance ID
+    Value: !Ref EC2Instance
+
+
+---
+
+2. Parameters File: parameters.json
+
+[
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t2.micro"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "your-keypair-name"
+  },
+  {
+    "ParameterKey": "AmiId",
+    "ParameterValue": "ami-0c55b159cbfafe1f0"   // Example Amazon Linux 2 AMI
+  },
+  {
+    "ParameterKey": "SubnetId",
+    "ParameterValue": "subnet-0abc123def456gh78"
+  },
+  {
+    "ParameterKey": "SecurityGroupId",
+    "ParameterValue": "sg-0123456789abcdef0"
+  }
+]
+
+
+---
+
+How to Deploy using AWS CLI
+
+aws cloudformation create-stack \
+  --stack-name my-ec2-stack \
+  --template-body file://template.yaml \
+  --parameters file://parameters.json \
+  --region us-east-1
+
+
+---
+
+Important Points
+
+
+---
+
+Summary
+
+Template: defines the structure (no hardcoding)
+
+Parameters.json: provides flexible environment-specific inputs
+
+Reusable: same template works for Dev, QA, Prod — only parameters change!
+
+
+
+---
+
+Would you also like me to create a second example for:
+
+Launch an EC2 + attach an EBS volume? (very common scenario in interviews)
+
+
+(Yes/No?)
+If Yes, I'll create that also!
+
