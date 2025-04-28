@@ -1,0 +1,148 @@
+
+In Bicep, best practice =
+define all important values as parameters and pass dynamic values using a .parameters.json file when you deploy.
+
+Example structure:
+
+/Assignment1
+  |-- main.bicep
+  |-- parameters.json
+
+/Assignment2
+  |-- main.bicep
+  |-- parameters.json
+
+
+---
+
+Assignment 1 Bicep Template (Example: Storage Account deployment)
+
+Assignment1/main.bicep
+
+param location string
+param storageAccountName string
+param skuName string
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: skuName
+  }
+  kind: 'StorageV2'
+  properties: {
+    accessTier: 'Hot'
+  }
+}
+
+
+---
+
+Assignment1/parameters.json
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus2"
+    },
+    "storageAccountName": {
+      "value": "hudevops25storacct"
+    },
+    "skuName": {
+      "value": "Standard_LRS"
+    }
+  }
+}
+
+
+---
+
+Assignment 2 Bicep Template (Example: Virtual Network deployment)
+
+Assignment2/main.bicep
+
+param location string
+param vnetName string
+param addressPrefix string
+param subnetName string
+param subnetPrefix string
+
+resource vnet 'Microsoft.Network/virtualNetworks@2023-04-01' = {
+  name: vnetName
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        addressPrefix
+      ]
+    }
+    subnets: [
+      {
+        name: subnetName
+        properties: {
+          addressPrefix: subnetPrefix
+        }
+      }
+    ]
+  }
+}
+
+
+---
+
+Assignment2/parameters.json
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus2"
+    },
+    "vnetName": {
+      "value": "hu-devops-25-vnet"
+    },
+    "addressPrefix": {
+      "value": "10.0.0.0/16"
+    },
+    "subnetName": {
+      "value": "sub-np-private-eastus2-10-0-1-0m24-sec-a"
+    },
+    "subnetPrefix": {
+      "value": "10.0.1.0/24"
+    }
+  }
+}
+
+
+---
+
+How to Deploy
+
+When you deploy these using Azure CLI:
+
+az deployment group create \
+  --resource-group AZRG-USE2-CON-DEVOPSHU2542-SBX-001 \
+  --template-file main.bicep \
+  --parameters @parameters.json
+
+(Notice: parameters are external, nothing hardcoded inside main.bicep!)
+
+
+---
+
+Summary
+
+
+---
+
+Next Step
+
+Would you like me also to prepare the same assignments in ARM Templates version (because you mentioned both ARM and Bicep in your assignment)?
+(Y/N)
+
+If yes, I’ll immediately give you main.json and parameters.json for ARM too!
+(very easy for you to practice both)
+
