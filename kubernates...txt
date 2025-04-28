@@ -1,0 +1,137 @@
+kubernates..
+ 1. Using kubectl get with jsonpath to lsit the containers..
+kubectl get pod multi-container-pod -o jsonpath='{.spec.containers[*].name}'
+
+This shows pod IPs, nodes, and statuses but not container names directly
+2.kubectl get pods -o wide 
+
+To list out the nodes .......
+kubectl get nodes -o wide
+kubectl get pods -A -o wide
+
+To create a pod of nginx.....
+kubectl run demo-pod --image=nginx
+
+To get the details of pod
+kubectl describe pods demo-pod
+
+to list the namespace ..
+kubectl get ns
+
+To create a name space ....
+kubectl create namespace dev
+
+if we want to create a custom namespace...
+kubectl run demo demo-dev --image=mginx -n dev
+
+if we want to see the pods in development name space.....
+kubectl get pods -n dev
+ 
+creating a pod...
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hu-devops-rkunda
+spec:
+  containers:
+  - name: rkunda-cont-1
+    image: nginx:1.14.2
+    ports:
+    - containerPort: 80
+To describe the pod.....
+kubectl describe pods hu-devops-rkunda
+
+if you want to list the output of the two intainers..
+kubectl logs -f testpod2
+ 
+for particular container............
+kubectl logs testpod2 -c cont1
+
+to delete the pod from particular namespace,...
+kubectl delete pod demo-prod -n prod
+
+
+concept of pv pvc and ps
+go to git hu-----------
+-----------------------
+for pv---------------
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: local-pv-volume
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+----------------------------------
+10 Gi volume assighned to pod-----
+for pvc
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: local-pv-claim
+  namespace: myvol
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+kubectl get pvc -n myvol
+
+Volume going to attached to a pod--------
+create pv-pod.yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: local-pv-pod
+  namespace: myvol
+spec:
+  volumes:
+    - name: local-pv-storage
+      persistentVolumeClaim:
+        claimName: local-pv-claim
+  containers:
+    - name: local-pv-container
+      image: nginx
+      ports:
+        - containerPort: 80
+          name: "http-server"
+      volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: local-pv-storage
+to describe the pod-----------------
+kubectl get pod -n myvol local-pv-pod----
+--------------------------------------------
+projected volume ---is adefault volume and may deleted when pod is deleted....
+pv ---is a permanent volume not delete even pod is deleted-----
+
+creating a ngnix deployment yaml file
+kubectl create deployment ngnixsvc --image=ngnix
+
+scaling of the pods----
+kubectl scale deployment ngnixsvc --replicas=3
+
+--------------------------------
+if you want to the default cluster ip[
+kubectl get svc
+
+if we you want to create own cluster ip--
+kubectl create deployment ngnixsvc --image=nginx
+kubectl get pods 
+kubectl describe svc ngnixsvc
+-------------------------------------------
+update the details of html page like first go the container and /usr/share/ngnix/html and update server..
+
+Edit the node port by aceesing the server acts as load balancing....
+kubectl edit svc ngnixsvc
+add protocal in port
+protocol: TCP
+nodeport:35000
+change type clusterip to Nodeport
+type:NodePort
