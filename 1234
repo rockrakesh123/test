@@ -9,3 +9,44 @@ name: test-cm
 data:
 
 db-port: "3306"
+
+
+selector:
+
+matchLabels:
+
+app: sample-python-app
+
+template:
+
+metadata:
+
+labels:
+
+app: sample-python-app
+
+spec:
+
+containers:
+
+name: python-app
+
+image: abhishekf5/python-sample-app-demo:v1
+
+env:
+
+name: DB-PORT
+
+valueFrom:
+
+configMapKeyRef:
+
+name: test-cm
+
+key: db-port
+
+ports:
+
+containerPort:
+
+8000
