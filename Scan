@@ -1,0 +1,93 @@
+To authenticate GitHub Actions with your company-provided (self-hosted) SonarQube, you'll typically use a SonarQube token and set it as a secret in your GitHub repository. Here's a complete step-by-step:
+
+
+---
+
+Step 1: Generate a SonarQube Token
+
+1. Log in to your company’s SonarQube portal.
+
+
+2. Go to your profile settings (click on your user avatar).
+
+
+3. Navigate to Security > Generate Tokens.
+
+
+4. Give it a name (e.g., github-token) and click Generate.
+
+
+5. Copy the token immediately (you won’t see it again).
+
+
+
+
+---
+
+Step 2: Store the Token in GitHub
+
+1. Go to your GitHub repository.
+
+
+2. Navigate to Settings > Secrets and variables > Actions > New repository secret.
+
+
+3. Add:
+
+Name: SONAR_TOKEN
+
+Value: Paste the token you copied
+
+
+
+
+Also, if your company SonarQube is hosted at a custom URL (not https://sonarcloud.io), store it too:
+
+Name: SONAR_HOST_URL
+
+Value: e.g., https://sonarqube.company.com
+
+
+
+---
+
+Step 3: Use in GitHub Actions Workflow
+
+Here’s a sample GitHub Actions workflow with Maven and SonarQube:
+
+name: Build and Analyze
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+
+      - name: Build and analyze
+        run: mvn clean verify sonar:sonar \
+          -Dsonar.projectKey=my-project-key \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+
+---
+
+Notes:
+
+Make sure sonar.projectKey matches the key created in your SonarQube project.
+
+The analysis will fail if your company’s SonarQube requires VPN or IP whitelisting unless GitHub Actions runners are allowed.
+
+
+Would you like a version for Node.js, Gradle, or Python projects instead?
+
